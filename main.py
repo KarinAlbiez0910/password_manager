@@ -76,12 +76,6 @@ def find_password():
             messagebox.showinfo(f"{search_term}", f"Email: {email}\n"
                                                   f"Password: {password}")
 
-
-
-
-
-
-
 # ---------------------------- UI SETUP ------------------------------- #
 
 
