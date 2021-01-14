@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 import random
+import json
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 #Password Generator Project
@@ -29,23 +30,56 @@ def save_data():
     website = website_in.get()
     email = user_in.get()
     password = password_in.get()
-    print(len(password))
-    print(len(email))
-    print(len(password))
+
+    new_data = {
+        website : {
+            'email': email,
+            'password': password
+        }
+    }
 
     if len(website) == 0 or len(password) == 0 or len(email) == 0:
         messagebox.showinfo(title="Ooops", message="Please don't leave any fields empty.")
 
     else:
+        try:
+            with open('data.json', mode='r') as data_file:
+                # reads json file
+                data = json.load(data_file)
+                # updates dictionary
+                data.update(new_data)
+        except FileNotFoundError:
+            with open('data.json', mode='w') as data_file:
+                json.dump(new_data, data_file, indent=4)
+        else:
+            with open('data.json', mode='w') as data_file:
+                json.dump(data, data_file, indent = 4)
+    website_in.delete(0, END)
+    password_in.delete(0, END)
+# ---------------------------- FIND PASSWORD ------------------------------- #
 
-        is_ok = messagebox.askokcancel(title=website,
-                                       message=f'These are the details entered:\nEmail: {email} \n'
-                                               f'Password: {password}\nIs it ok to save?')
-        if is_ok:
-            with open('saved_data.txt', mode='a') as file:
-                file.write(f'{website} | {email} | {password}\n')
-            website_in.delete(0, END)
-            password_in.delete(0, END)
+def find_password():
+    search_term = website_in.get()
+    try:
+        with open('data.json', mode='r') as json_file:
+            json_dict = json.load(json_file)
+    except FileNotFoundError:
+        messagebox.showinfo("Error", "No Data File Found")
+    else:
+        try:
+            json_dict[search_term]
+        except KeyError:
+            messagebox.showinfo("Error", f"No Details For {search_term} Found")
+        else:
+            email = json_dict[search_term]['email']
+            password = json_dict[search_term]['password']
+            messagebox.showinfo(f"{search_term}", f"Email: {email}\n"
+                                                  f"Password: {password}")
+
+
+
+
+
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -64,9 +98,12 @@ canvas.grid(row=0, column=1)
 website_label = Label(text='Website:', font=('Courier', 10, 'normal'))
 website_label.grid(row=1, column=0)
 
-website_in = Entry(width=52)
-website_in.grid(row=1, column=1, columnspan=2)
+website_in = Entry(width=33)
+website_in.grid(row=1, column=1)
 website_in.focus()
+
+search_button = Button(text='Search', width=15, command=find_password)
+search_button.grid(row=1, column=2)
 
 
 user_label = Label(text='Email/Username:', font=('Courier', 10, 'normal'))
